@@ -1,0 +1,101 @@
+-----------------------------------------------------------------------------------
+-------------------------- wishlist 관련 패키지 선언부 -------------------------------
+-----------------------------------------------------------------------------------
+drop package wishlist_pack;
+create or replace package wishlist_pack is
+
+    -- wishlist에 상품 추가하는 프로시저 --
+    procedure insert_wishlist_procedure
+        (v_member_id    in member.id%type,       -- 현재 접속중인 계정 id 
+         v_product_code in product.code%type);   -- 위시리스트에 담을 상품 코드
+         
+    -- wishlist 목록 추출하는 프로시저 --
+    procedure select_all_wishlist_procedure
+        (v_member_id in member.id%type,          -- 확인하고자하는 위시리스트의 계정 id
+         rec         out SYS_REFCURSOR);         -- 화면에 보여줄 정보를 받기 위한 커서
+    
+    -- wishlist 펀딩 종료되는 프로시저 --     
+    procedure end_wishlist_procedure
+        (v_code in wishlist.code%type);          -- 펀딩 종료할 상품에 대한 위시리스트 코드
+    
+    -- wishlist에 담긴 상품의 총 가격 반환하는 함수 --  
+    function total_price_wishlist_function
+        (v_member_id in member.id%type)          -- 계정 id 입력
+    return product.price%type;                   -- price와 같은 타입을 리턴해준다
+         
+end wishlist_pack;
+/
+
+-----------------------------------------------------------------------------------
+-------------------------- wishlist 관련 패키지 바디 --------------------------------
+-----------------------------------------------------------------------------------
+create or replace package body wishlist_pack is
+
+    -- wishlist에 상품 추가하는 프로시저 --
+    procedure insert_wishlist_procedure
+        (v_member_id    in member.id%type,      -- 현재 접속중인 계정 id 
+         v_product_code in product.code%type)   -- 위시리스트에 담을 상품 코드
+    is
+        cursor wishlist_chk is  -- 위시리스트에 중복 상품이 존재하는지 확인하기 위한 커서
+            select *
+            from wishlist
+            where member_id = v_member_id 
+                    and product_code = v_product_code 
+                    and end_date is null;
+    begin
+        for rec in wishlist_chk     -- 위시리스트에 동일 상품이 존재하는지 확인
+            loop
+                if wishlist_chk%found then  -- 동일 상품이 존재하면 에러 발생
+                    dbms_output.put_line('해당 상품이 이미 위시리스트에 존재합니다.');
+                    raise_application_error(-20001, '해당 상품이 이미 위시리스트에 존재합니다.');
+                end if;
+            end loop;
+    
+        insert into wishlist(product_code, start_date, end_date, member_id) -- 동일 상품이 없다면 테이블에 insert
+        values(v_product_code, sysdate, null, v_member_id);
+        
+        commit;
+    end;
+    
+    -- wishlist 목록 추출하는 프로시저 --
+    procedure select_all_wishlist_procedure
+        (v_member_id in member.id%type,         -- 확인하고자하는 위시리스트의 계정 id
+         rec         out SYS_REFCURSOR)         -- 화면에 보여줄 정보를 받기 위한 커서
+
+    is
+    begin
+        open rec for    -- 화면에 보여줄 정보를 커서에 저장
+            -- 위시리스트 코드, 상품코드, 상품가격, 이미지 경로 추출
+            select wishlist_code, product_code, 
+                   price, image_path
+            from wishlist_mem_prod_join
+            where member_id = v_member_id and end_date is null;
+    end;
+    
+    -- wishlist 펀딩 종료되는 프로시저 --    
+    procedure end_wishlist_procedure
+        (v_code in wishlist.code%type) -- 펀딩 종료할 상품에 대한 위시리스트 코드
+    is
+    begin
+        update wishlist set end_date = sysdate -- enddate를 현재 날짜로 설정
+        where code = v_code;
+        commit;
+    end;
+    
+    -- wishlist에 담긴 상품의 총 가격 반환하는 함수 -- 
+    function total_price_wishlist_function
+        (v_member_id in member.id%type) -- 계정 id 입력
+    return product.price%type   -- price와 같은 타입을 리턴해준다
+    is
+        v_total_price product.price%type;
+    begin
+        select sum(price) into v_total_price    -- 상품 총 가격 계산
+        from wishlist_mem_prod_join
+        where member_id = v_member_id and end_date is null;
+        
+        return v_total_price;   -- total price 리턴
+    end;
+
+end wishlist_pack;
+/
+-----------------------------------------------------------------------------------

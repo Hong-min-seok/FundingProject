@@ -1,0 +1,132 @@
+drop table fundingjoin;
+drop table wishlist;
+drop table orders;
+drop table product;
+drop table member;
+alter table member drop constraint user_pk;
+alter table orders drop constraint order_pk;
+alter table product drop constraint product_pk;
+drop cluster cls_wishlist_member_id;
+drop index IDX_CLS_wishlist_member_id;
+alter table wishlist drop constraint wishlist_pk;
+alter table fundingjoin drop constraint fundingjoin_member_pk;
+alter table fundingjoin drop constraint fundingjoin_wishlist_fk;
+alter table orders drop constraint orders_member_fk;
+alter table orders drop constraint orders_product_fk;
+alter table wishlist drop constraint wishlist_member;
+alter table wishlist drop constraint wishlist_product_fk;
+
+-------------------------fundingjoin--------------------------------
+CREATE TABLE fundingjoin (
+    fund_money     NUMBER(6) NOT NULL,
+    wishlist_code  NUMBER(4) NOT NULL,
+    member_id        VARCHAR2(20) NOT NULL,
+        PRIMARY KEY(MEMBER_ID, WISHLIST_CODE)
+) ORGANIZATION INDEX;
+---------------------------------------------------------------------
+
+-------------------------member-----------------------------------
+CREATE TABLE member (
+    id                   VARCHAR2(20) NOT NULL,
+    password             VARCHAR2(15) NOT NULL,
+    name                 VARCHAR2(20) NOT NULL,
+    birthday             DATE NOT NULL,
+    address              VARCHAR2(30) NOT NULL,
+    point                NUMBER(6) NOT NULL,
+    total_funding_money  NUMBER(6),
+    image_path           VARCHAR2(200)
+);
+
+
+ALTER TABLE member ADD CONSTRAINT user_pk PRIMARY KEY ( id );
+--------------------------------------------------------------------
+
+-------------------------orders--------------------------------
+CREATE TABLE orders (
+    code          NUMBER(4) NOT NULL,
+    member_id     VARCHAR2(20) NOT NULL,
+    product_code  NUMBER(4) NOT NULL,
+    order_date    DATE NOT NULL
+);
+
+ALTER TABLE orders ADD CONSTRAINT order_pk PRIMARY KEY ( code );
+---------------------------------------------------------------
+
+-------------------------product--------------------------------
+CREATE TABLE product (
+    code         NUMBER(4) NOT NULL,
+    name         VARCHAR2(20) NOT NULL,
+    price        NUMBER(6) NOT NULL,
+    image_path   VARCHAR2(200) NOT NULL,
+    description  CLOB NOT NULL
+);
+
+ALTER TABLE product ADD CONSTRAINT product_pk PRIMARY KEY ( code );
+------------------------------------------------------------------------------------
+
+-------------------------wishlist--------------------------------
+CREATE CLUSTER cls_wishlist_member_id(member_id VARCHAR2(20))
+SIZE 1K
+TABLESPACE users;
+
+
+CREATE INDEX IDX_CLS_WISHLIST_member_ID
+ ON CLUSTER CLS_WISHLIST_member_ID
+ TABLESPACE users;
+
+--##시퀀스 자동 증분 위해 identity column 사용--
+CREATE TABLE wishlist (
+    code          NUMBER(4) generated as identity start with 1000 NOT NULL,
+    product_code  NUMBER(4) NOT NULL,
+    start_date    DATE NOT NULL,
+    end_date      DATE,
+    member_id       VARCHAR2(20) NOT NULL
+) CLUSTER CLS_WISHLIST_MEMBER_ID(MEMBER_ID);
+
+--**MEMBER_ID로 검색 많이 해서 인덱스 생성--
+CREATE INDEX WISHLIST_MEMBER_ID_IDX ON WISHLIST(MEMBER_ID);
+
+ALTER TABLE wishlist ADD CONSTRAINT wishlist_pk PRIMARY KEY ( code );
+
+
+--## wishlist 테이블은 product와 조인이 자주 발생한다. 조인이 자주 일어나는 컬럼들을 묶어 view로 생성
+CREATE OR REPLACE VIEW wishlist_mem_prod_join
+AS
+-- 위시리스트 코드, 멤버id, 상품 코드, 상품 가격, 상품 이미지 경로, enddate 추출
+SELECT w.code wishlist_code, w.member_id, P.code product_code, 
+       P.price, P.image_path, w.end_date
+FROM wishlist w JOIN product P
+                  ON w.product_code = P.code;
+----------------------------------------------------------------------------------
+
+---------------------------외래키 제약조건 생성--------------------------------------
+ALTER TABLE fundingjoin
+    ADD CONSTRAINT fundingjoin_member_fk FOREIGN KEY ( member_id )
+        REFERENCES member ( id );
+
+
+ALTER TABLE fundingjoin
+    ADD CONSTRAINT fundingjoin_wishlist_fk FOREIGN KEY ( wishlist_code )
+        REFERENCES wishlist ( code );
+
+
+ALTER TABLE orders
+    ADD CONSTRAINT orders_member_fk FOREIGN KEY ( member_id )
+        REFERENCES member ( id );
+
+
+ALTER TABLE orders
+    ADD CONSTRAINT orders_product_fk FOREIGN KEY ( product_code )
+        REFERENCES product ( code );
+
+
+ALTER TABLE wishlist
+    ADD CONSTRAINT wishlist_member_fk FOREIGN KEY ( member_id )
+        REFERENCES member ( id );
+
+
+ALTER TABLE wishlist
+    ADD CONSTRAINT wishlist_product_fk FOREIGN KEY ( product_code )
+        REFERENCES product ( code );
+
+--------------------------------------------------------------------------
