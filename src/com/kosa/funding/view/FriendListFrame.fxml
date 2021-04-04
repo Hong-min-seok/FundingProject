@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="719.0" prefWidth="450.0" styleClass="root" stylesheets="@../../../../../css/FrinedList.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.FriendController">
+   <children>
+      <VBox layoutX="134.0" layoutY="102.0" prefHeight="660.0" prefWidth="450.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label text="내 프로필">
+               <font>
+                  <Font size="14.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" top="5.0" />
+               </VBox.margin></Label>
+            <ListView fx:id="myprofile" prefHeight="70.0" prefWidth="200.0" />
+            <Label text="생일인 친구">
+               <font>
+                  <Font size="14.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" top="5.0" />
+               </VBox.margin></Label>
+            <ListView fx:id="bfriendlist" prefHeight="137.0" prefWidth="450.0" />
+            <Label text="친구 목록">
+               <font>
+                  <Font size="14.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" top="5.0" />
+               </VBox.margin></Label>
+            <ListView fx:id="friendlist" prefHeight="433.0" prefWidth="450.0" />
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

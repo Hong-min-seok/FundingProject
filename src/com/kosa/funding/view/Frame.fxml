@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="bp" prefHeight="775.0" prefWidth="498.0" stylesheets="@../../../../../css/Frame.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.FrameController">
+   <top>
+      <HBox prefHeight="51.0" prefWidth="498.0" style="-fx-background-color: #264836;" BorderPane.alignment="CENTER">
+         <children>
+            <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onMouseClicked="#FriendListClick" prefHeight="66.0" prefWidth="124.0" style="-fx-background-color: transparent; -fx-border-color: white; -fx-border-width: 0px 3px 0px 0px;" text="친구목록" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font size="16.0" />
+               </font></Button>
+            <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onMouseClicked="#WishListClick" prefHeight="56.0" prefWidth="126.0" style="-fx-background-color: transparent; -fx-border-color: white; -fx-border-width: 0px 3px 0px 0px;" text="위시리스트" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font size="16.0" />
+               </font></Button>
+            <Button layoutX="121.0" layoutY="10.0" mnemonicParsing="false" onMouseClicked="#StoreClick" prefHeight="81.0" prefWidth="130.0" style="-fx-background-color: transparent; -fx-border-color: white; -fx-border-width: 0px 3px 0px 0px;" text="상점" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font size="16.0" />
+               </font></Button>
+            <Button mnemonicParsing="false" onMouseClicked="#GraphClick" prefHeight="81.0" prefWidth="130.0" style="-fx-background-color: transparent; -fx-border-color: white; -fx-border-width: 0px 3px 0px 0px;" text="펀딩현황" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font size="16.0" />
+               </font></Button>
+         </children>
+      </HBox>
+   </top>
+   <center>
+      <AnchorPane fx:id="ap" prefHeight="696.0" prefWidth="521.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label layoutX="199.0" layoutY="333.0" text="여기는AnchorPane" />
+         </children></AnchorPane>
+   </center>
+</BorderPane>

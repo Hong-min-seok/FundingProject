@@ -1,0 +1,32 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+
+@font-face{
+   font-family:TmoneyRoundWindExtraBold;
+   src:url('../font/TmoneyRoundWindExtraBold.ttf');
+}
+
+@font-face{
+   font-family:GodoM;
+   src:url('../font/GodoM.ttf');
+}
+
+#title {
+	
+	-fx-font-family: "GodoM";
+}
+
+.root {
+	-fx-font-family: "GodoM";
+}
+
+.text {
+	-fx-font-family: "GodoM";
+}
+
+.button {
+	-fx-font-family: "GodoM";
+}
+
+.label {
+	-fx-font-family: "GodoM";
+}

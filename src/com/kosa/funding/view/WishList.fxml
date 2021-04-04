@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="sp" prefHeight="660.0" prefWidth="450.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.WishListController">
+	<children>
+		<VBox alignment="CENTER" prefHeight="660.0" prefWidth="450.0">
+			<padding>
+				<Insets topRightBottomLeft="10" />
+			</padding>
+			<children>
+				<HBox prefHeight="155.0" prefWidth="430.0" spacing="10.0" VBox.vgrow="SOMETIMES">
+					<children>
+						<ImageView fx:id="my_profile" fitHeight="150.0" fitWidth="124.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS" />
+						<VBox alignment="CENTER" prefHeight="159.0" prefWidth="167.0" spacing="10.0" HBox.hgrow="ALWAYS">
+							<children>
+								<Label fx:id="Label_id" text="benny7777" />
+								<Label fx:id="Label_name" text="Label" />
+							</children>
+						</VBox>
+						<VBox alignment="CENTER_RIGHT" prefHeight="150.0" prefWidth="147.0" spacing="10.0" HBox.hgrow="NEVER">
+							<children>
+
+								<Label fx:id="Label_point" text="point" />
+								<Label fx:id="Label_funding_money" text="fundingmoney" />
+							</children>
+							<HBox.margin>
+								<Insets right="5.0" />
+							</HBox.margin>
+						</VBox>
+					</children>
+				</HBox>
+				<GridPane hgap="10.0" prefHeight="511.0" prefWidth="430.0" vgap="10.0" VBox.vgrow="SOMETIMES">
+					<padding>
+						<Insets topRightBottomLeft="10" />
+					</padding>
+					<children>
+
+
+						<Label fx:id="imageLabel1" text="상품1" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+						<ImageView fx:id="imageView1" preserveRatio="true" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+						<Label fx:id="imageLabel2" text="상품2" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+						<ImageView fx:id="imageView2" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+						<Label fx:id="imageLabel3" text="상품3" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+						<ImageView fx:id="imageView3" preserveRatio="true" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+						<Label fx:id="imageLabel4" text="상품4" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+						<ImageView fx:id="imageView4" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+						<Button onAction="#handleBtnPrevAction" text="이전" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+						<Button onAction="#handleBtnNextAction" text="다음" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+					</children>
+					<columnConstraints>
+						<ColumnConstraints />
+						<ColumnConstraints />
+					</columnConstraints>
+					<rowConstraints>
+						<RowConstraints />
+						<RowConstraints />
+						<RowConstraints />
+						<RowConstraints />
+						<RowConstraints />
+						<RowConstraints />
+					</rowConstraints>
+				</GridPane>
+			</children>
+		</VBox>
+	</children>
+</StackPane>

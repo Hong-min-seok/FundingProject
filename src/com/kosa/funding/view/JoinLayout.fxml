@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="700.0" prefWidth="450.0" style="-fx-background-color: #264836;" stylesheets="@../../../../../css/Join.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.JoinController">
+   <children>
+      <TextField fx:id="JoinIdField" layoutX="153.0" layoutY="226.0" />
+      <PasswordField fx:id="JoinPasswordField" layoutX="153.0" layoutY="297.0" />
+      <TextField fx:id="JoinNameField" layoutX="153.0" layoutY="365.0" />
+      
+      <TextField fx:id="JoinBirthFieldYYYY" layoutX="154.0" layoutY="423.0" prefHeight="33.0" prefWidth="64.0" />
+      <TextField fx:id="JoinBirthFieldMM" layoutX="222.0" layoutY="423.0" prefHeight="33.0" prefWidth="37.0" />
+      <TextField fx:id="JoinBirthFieldDD" layoutX="266.0" layoutY="423.0" prefHeight="33.0" prefWidth="37.0" />
+      
+      <TextField fx:id="JoinAddressField" layoutX="153.0" layoutY="509.0" />
+      
+      <Text fill="WHITE" layoutX="153.0" layoutY="223.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ID" wrappingWidth="24.4453125" />
+      <Text fill="WHITE" layoutX="154.0" layoutY="294.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Password" />
+      <Text fill="WHITE" layoutX="153.0" layoutY="362.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Name" wrappingWidth="47.214844822883606" />
+      <Text fill="WHITE" layoutX="153.0" layoutY="420.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Birthday" />
+      <Text fill="WHITE" layoutX="153.0" layoutY="506.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Address" />
+      <Text id="title" fill="WHITE" layoutX="147.0" layoutY="153.0" strokeType="OUTSIDE" strokeWidth="0.0" text="회원가입">
+         <font>
+            <Font name="GodoM" size="40.0" />
+         </font></Text>
+      <Button fx:id="JoinJoinbtn" layoutX="186.0" layoutY="566.0" mnemonicParsing="false" onAction="#JoinJoinAction" prefHeight="33.0" prefWidth="72.0" style="-fx-background-color: #CC9933;" text="회원가입" />
+      
+      <Text fill="WHITE" layoutX="157.0" layoutY="332.0" strokeType="OUTSIDE" strokeWidth="0.0" text="대소문자구별" wrappingWidth="83.0" />
+      <Text fill="WHITE" layoutX="152.0" layoutY="468.0" strokeType="OUTSIDE" strokeWidth="0.0" text="예)  1994   -   02  -   06" />
+
+      
+      
+   </children>
+</AnchorPane>
