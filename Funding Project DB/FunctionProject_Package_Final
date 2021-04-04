@@ -1,0 +1,370 @@
+-----------------------------------------------------------------------------------
+-------------------------- wishlist 관련 패키지 선언부 -------------------------------
+-----------------------------------------------------------------------------------
+drop package wishlist_pack;
+create or replace package wishlist_pack is
+
+    -- wishlist에 상품 추가하는 프로시저 --
+    procedure insert_wishlist_procedure
+        (v_member_id    in member.id%type,       -- 현재 접속중인 계정 id 
+         v_product_code in product.code%type);   -- 위시리스트에 담을 상품 코드
+         
+    -- wishlist 목록 추출하는 프로시저 --
+    procedure select_all_wishlist_procedure
+        (v_member_id in member.id%type,          -- 확인하고자하는 위시리스트의 계정 id
+         rec         out SYS_REFCURSOR);         -- 화면에 보여줄 정보를 받기 위한 커서
+    
+    -- wishlist 펀딩 종료되는 프로시저 --     
+    procedure end_wishlist_procedure
+        (v_code in wishlist.code%type);          -- 펀딩 종료할 상품에 대한 위시리스트 코드
+    
+    -- wishlist에 담긴 상품의 총 가격 반환하는 함수 --  
+    function total_price_wishlist_function
+        (v_member_id in member.id%type)          -- 계정 id 입력
+    return product.price%type;                   -- price와 같은 타입을 리턴해준다
+         
+end wishlist_pack;
+/
+
+-----------------------------------------------------------------------------------
+-------------------------- wishlist 관련 패키지 바디 --------------------------------
+-----------------------------------------------------------------------------------
+create or replace package body wishlist_pack is
+
+    -- wishlist에 상품 추가하는 프로시저 --
+    procedure insert_wishlist_procedure
+        (v_member_id    in member.id%type,      -- 현재 접속중인 계정 id 
+         v_product_code in product.code%type)   -- 위시리스트에 담을 상품 코드
+    is
+        cursor wishlist_chk is  -- 위시리스트에 중복 상품이 존재하는지 확인하기 위한 커서
+            select *
+            from wishlist
+            where member_id = v_member_id 
+                    and product_code = v_product_code 
+                    and end_date is null;
+    begin
+        for rec in wishlist_chk     -- 위시리스트에 동일 상품이 존재하는지 확인
+            loop
+                if wishlist_chk%found then  -- 동일 상품이 존재하면 에러 발생
+                    dbms_output.put_line('해당 상품이 이미 위시리스트에 존재합니다.');
+                    raise_application_error(-20001, '해당 상품이 이미 위시리스트에 존재합니다.');
+                end if;
+            end loop;
+    
+        insert into wishlist(product_code, start_date, end_date, member_id) -- 동일 상품이 없다면 테이블에 insert
+        values(v_product_code, sysdate, null, v_member_id);
+        
+        commit;
+    end;
+    
+    -- wishlist 목록 추출하는 프로시저 --
+    procedure select_all_wishlist_procedure
+        (v_member_id in member.id%type,         -- 확인하고자하는 위시리스트의 계정 id
+         rec         out SYS_REFCURSOR)         -- 화면에 보여줄 정보를 받기 위한 커서
+
+    is
+    begin
+        open rec for    -- 화면에 보여줄 정보를 커서에 저장
+            -- 위시리스트 코드, 상품코드, 상품가격, 이미지 경로 추출
+            select wishlist_code, product_code, 
+                   price, image_path
+            from wishlist_mem_prod_join
+            where member_id = v_member_id and end_date is null;
+    end;
+    
+    -- wishlist 펀딩 종료되는 프로시저 --    
+    procedure end_wishlist_procedure
+        (v_code in wishlist.code%type) -- 펀딩 종료할 상품에 대한 위시리스트 코드
+    is
+    begin
+        update wishlist set end_date = sysdate -- enddate를 현재 날짜로 설정
+        where code = v_code;
+        commit;
+    end;
+    
+    -- wishlist에 담긴 상품의 총 가격 반환하는 함수 -- 
+    function total_price_wishlist_function
+        (v_member_id in member.id%type) -- 계정 id 입력
+    return product.price%type   -- price와 같은 타입을 리턴해준다
+    is
+        v_total_price product.price%type;
+    begin
+        select sum(price) into v_total_price    -- 상품 총 가격 계산
+        from wishlist_mem_prod_join
+        where member_id = v_member_id and end_date is null;
+        
+        return v_total_price;   -- total price 리턴
+    end;
+
+end wishlist_pack;
+/
+-----------------------------------------------------------------------------------
+
+
+-------------------------------------------
+---------fundingjoin 패키지 선언부------------
+-------------------------------------------
+DROP PACKAGE fundingjoin_pack;
+
+DROP FUNCTION fundingjoin_insert;
+
+DROP FUNCTION fundingjoin_money_update;
+
+DROP PROCEDURE fundingjoin_check;
+
+PURGE RECYCLEBIN;
+
+CREATE OR REPLACE PACKAGE fundingjoin_pack IS
+    PROCEDURE fundingjoin_insert (
+        fund_money_a           IN  fundingjoin.fund_money%TYPE,
+        wish_code_a            IN  fundingjoin.wishlist_code%TYPE,
+        member_id_a            IN  fundingjoin.member_id%TYPE,
+        target_id              IN  VARCHAR2,
+        insert_money_possible  IN  NUMBER
+    );
+
+    PROCEDURE fundingjoin_money_update (
+        fund_money_a           IN  fundingjoin.fund_money%TYPE,
+        wish_code_a            IN  fundingjoin.wishlist_code%TYPE,
+        member_id_a            IN  fundingjoin.member_id%TYPE,
+        target_id              IN  VARCHAR2,
+        insert_money_possible  IN  NUMBER
+    );
+
+    FUNCTION fundingjoin_choice (
+        fund_money_a  IN  fundingjoin.fund_money%TYPE,
+        wish_code_a   IN  fundingjoin.wishlist_code%TYPE,
+        member_id_a   IN  fundingjoin.member_id%TYPE
+    ) RETURN NUMBER;
+
+    PROCEDURE member_funding_update (
+        target_id     IN  VARCHAR2,
+        insert_money  IN  NUMBER
+    );
+END;
+/
+
+
+
+-------------------------------------------
+---------fundingjoin 패키지 바디------------
+-------------------------------------------
+CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
+
+    PROCEDURE fundingjoin_insert (
+        fund_money_a           IN  fundingjoin.fund_money%TYPE,
+        wish_code_a            IN  fundingjoin.wishlist_code%TYPE,
+        member_id_a            IN  fundingjoin.member_id%TYPE,
+        target_id              IN  VARCHAR2,
+        insert_money_possible  IN  NUMBER
+    ) IS
+    BEGIN
+--펀딩 가능한 금액보다 적은 금액을 펀딩하려할 때
+        IF fund_money_a < insert_money_possible THEN
+            INSERT INTO fundingjoin (
+                fund_money,
+                wishlist_code,
+                member_id
+            ) VALUES (
+                fund_money_a,
+                wish_code_a,
+                member_id_a
+            );
+
+            fundingjoin_pack.member_funding_update(target_id, fund_money_a);
+            COMMIT;
+--펀딩 가능한 금액보다 많은 금액을 펀딩하려할 때
+        ELSIF fund_money_a >= insert_money_possible THEN
+            INSERT INTO fundingjoin (
+                fund_money,
+                wishlist_code,
+                member_id
+            ) VALUES (
+                insert_money_possible,
+                wish_code_a,
+                member_id_a
+            );
+
+            fundingjoin_pack.member_funding_update(target_id, insert_money_possible);
+            wishlist_pack.end_wishlist_procedure(wish_code_a);
+            COMMIT;
+        END IF;
+    END;
+
+    PROCEDURE fundingjoin_money_update (
+        fund_money_a           IN  fundingjoin.fund_money%TYPE,
+        wish_code_a            IN  fundingjoin.wishlist_code%TYPE,
+        member_id_a            IN  fundingjoin.member_id%TYPE,
+        target_id              IN  VARCHAR2,
+        insert_money_possible  IN  NUMBER
+    ) IS
+    BEGIN
+    
+--펀딩 가능한 금액보다 적은 금액을 펀딩하려할 때
+        IF fund_money_a < insert_money_possible THEN
+            UPDATE fundingjoin
+            SET
+                fund_money = fund_money + fund_money_a
+            WHERE
+                    wishlist_code = wish_code_a
+                AND member_id = member_id_a;
+
+-- 트리거
+            fundingjoin_pack.member_funding_update(target_id, fund_money_a);
+            COMMIT;
+
+--펀딩 가능한 금액보다 많은 금액을 펀딩하려할 때
+        ELSIF fund_money_a >= insert_money_possible THEN
+            UPDATE fundingjoin
+            SET
+                fund_money = fund_money + insert_money_possible
+            WHERE
+                    wishlist_code = wish_code_a
+                AND member_id = member_id_a;
+
+            fundingjoin_pack.member_funding_update(target_id, insert_money_possible);
+            wishlist_pack.end_wishlist_procedure(wish_code_a);
+            COMMIT;
+        END IF;
+    END;
+
+    FUNCTION fundingjoin_choice (
+        fund_money_a  IN  fundingjoin.fund_money%TYPE,
+        wish_code_a   IN  fundingjoin.wishlist_code%TYPE,
+        member_id_a   IN  fundingjoin.member_id%TYPE
+    ) RETURN NUMBER IS
+
+        exist_check               NUMBER := -1;
+        target_id                 VARCHAR2(20) := NULL;
+        target_product_code       NUMBER := -1;
+        current_point             INTEGER := -1;
+        target_product_price      NUMBER := -1;
+        total_product_fund_money  NUMBER := -1;
+        insert_money_possible     NUMBER := -1;
+        end_check                 DATE;
+        no_sufficient EXCEPTION;
+        PRAGMA exception_init ( no_sufficient, -20212 );
+    BEGIN
+    -- 펀딩받는 사람 id, 펀딩할 물건의 코드, 펀딩종료 여부 조회
+        SELECT
+            member_id,
+            product_code,
+            end_date
+        INTO
+            target_id,
+            target_product_code,
+            end_check
+        FROM
+            wishlist
+        WHERE
+            code = wish_code_a;
+
+        IF end_check != NULL OR target_id = member_id_a THEN
+            raise_application_error(-20212, '조건을 만족하지 않습니다');
+        END IF;
+    -- 펀딩할 사람이 가진 포인트 조회
+        SELECT
+            point
+        INTO current_point
+        FROM
+            member
+        WHERE
+            id = member_id_a;
+
+        IF current_point < fund_money_a THEN
+            raise_application_error(-20212, '조건을 만족하지 않습니다');
+        END IF;
+        
+   -- 펀딩할 물건의 가격 조회
+        SELECT
+            price
+        INTO target_product_price
+        FROM
+            product
+        WHERE
+            code = target_product_code;
+
+   -- 지금까지 해당 위시리스트에 펀딩된 총 금액
+        BEGIN
+            SELECT
+                SUM(fund_money)
+            INTO total_product_fund_money
+            FROM
+                fundingjoin
+            WHERE
+                wishlist_code = wish_code_a
+            GROUP BY
+                wishlist_code;
+
+        EXCEPTION
+            WHEN no_data_found THEN
+                total_product_fund_money := 0;
+        END;
+
+        insert_money_possible := target_product_price - total_product_fund_money;
+        IF insert_money_possible <= 0 THEN
+            raise_application_error(-20212, '조건을 만족하지 않습니다');
+        END IF;
+        
+   -- 펀딩할 사람이 해당 위시리스트에 펀딩한 적이 있는지 유무 조회
+        SELECT
+            COUNT(member_id)
+        INTO exist_check
+        FROM
+            fundingjoin
+        WHERE
+                member_id = member_id_a
+            AND wishlist_code = wish_code_a;
+
+   -- 펀딩한 적 있으면 update, 없으면 insert
+        IF exist_check > 0 THEN
+            fundingjoin_pack.fundingjoin_money_update(fund_money_a, wish_code_a, member_id_a, target_id, insert_money_possible);
+        ELSE
+            fundingjoin_pack.fundingjoin_insert(fund_money_a, wish_code_a, member_id_a, target_id, insert_money_possible);
+        END IF;
+
+        RETURN 1;    
+    -- 예외처리
+    EXCEPTION
+        WHEN no_sufficient THEN
+            RETURN 129;
+    END;
+
+    PROCEDURE member_funding_update (
+        target_id     IN  VARCHAR2,
+        insert_money  IN  NUMBER
+    ) IS
+    BEGIN
+        UPDATE member
+        SET
+            total_funding_money = total_funding_money + insert_money
+        WHERE
+            id = target_id;
+
+        COMMIT;
+    END;
+END;
+/
+
+@fundingjoin_pack.sql
+
+
+CREATE OR REPLACE TRIGGER total_funding_tigger
+    AFTER INSERT OR UPDATE ON fundingjoin
+    FOR EACH ROW
+    BEGIN
+      IF INSERTING THEN
+        UPDATE member
+        SET
+            member.point = member.point - :new.fund_money
+        WHERE
+            member.id = :new.member_id;
+      ELSE   /* Updating. */
+        UPDATE member
+        SET
+        member.point = member.point - ( :new.fund_money - :old.fund_money )
+        WHERE
+        member.id = :new.member_id;
+      END IF;
+    END;
+    /

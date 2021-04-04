@@ -1,0 +1,158 @@
+DROP TABLE fundingjoin;
+DROP TABLE wishlist;
+DROP TABLE orders;
+DROP TABLE product;
+DROP TABLE MEMBER;
+ALTER TABLE MEMBER DROP CONSTRAINT user_pk;
+ALTER TABLE orders DROP CONSTRAINT order_pk;
+ALTER TABLE product DROP CONSTRAINT product_pk;
+DROP CLUSTER cls_wishlist_member_id;
+DROP INDEX idx_cls_wishlist_member_id;
+DROP INDEX fundingjoin_fund_money_idx;
+DROP SEQUENCE seq_order;
+DROP SEQUENCE seq_product;
+ALTER TABLE wishlist DROP CONSTRAINT wishlist_pk;
+ALTER TABLE fundingjoin DROP CONSTRAINT fundingjoin_member_pk;
+ALTER TABLE fundingjoin DROP CONSTRAINT fundingjoin_wishlist_fk;
+ALTER TABLE orders DROP CONSTRAINT orders_member_fk;
+ALTER TABLE orders DROP CONSTRAINT orders_product_fk;
+ALTER TABLE wishlist DROP CONSTRAINT wishlist_member;
+ALTER TABLE wishlist DROP CONSTRAINT wishlist_product_fk;
+
+
+-------------------------fundingjoin--------------------------------
+CREATE TABLE fundingjoin (
+    fund_money     NUMBER(6) NOT NULL,
+    wishlist_code  NUMBER(4) NOT NULL,
+    member_id        VARCHAR2(20) NOT NULL,
+        PRIMARY KEY(member_id, wishlist_code)
+) ORGANIZATION INDEX;
+
+CREATE INDEX fundingjoin_fund_money_idx ON fundingjoin(fund_money);
+---------------------------------------------------------------------
+
+-------------------------member-----------------------------------
+CREATE TABLE MEMBER (
+    ID                   VARCHAR2(20) NOT NULL,
+    PASSWORD             VARCHAR2(15) NOT NULL,
+    NAME                 VARCHAR2(20) NOT NULL,
+    birthday             DATE NOT NULL,
+    address              VARCHAR2(30) NOT NULL,
+    POINT                NUMBER(6) DEFAULT 100000 NOT NULL,
+    total_funding_money  NUMBER(6) DEFAULT 0 NOT NULL,
+    image_path           VARCHAR2(200) DEFAULT './defaultprofile.png'
+);
+
+
+ALTER TABLE MEMBER ADD CONSTRAINT user_pk PRIMARY KEY ( ID );
+--------------------------------------------------------------------
+
+-------------------------orders--------------------------------
+CREATE SEQUENCE seq_order NOCYCLE;
+
+--orders table 생성(partition으로)
+CREATE TABLE orders (
+    code          NUMBER(4) NOT NULL,
+    member_id     VARCHAR2(20) NOT NULL,
+    product_code  NUMBER(4) NOT NULL,
+    order_date    DATE NOT NULL
+)PARTITION BY RANGE(order_date)
+(
+PARTITION m_2021_01 VALUES LESS THAN (TO_DATE(20210201,'YYYYMMDD')),
+PARTITION m_2021_02 VALUES LESS THAN (TO_DATE(20210301,'YYYYMMDD')),
+PARTITION m_2021_03 VALUES LESS THAN (TO_DATE(20210401,'YYYYMMDD')),
+PARTITION m_2021_04 VALUES LESS THAN (TO_DATE(20210501,'YYYYMMDD')),
+PARTITION m_2021_05 VALUES LESS THAN (TO_DATE(20210601,'YYYYMMDD')),
+PARTITION m_2021_06 VALUES LESS THAN (TO_DATE(20210701,'YYYYMMDD')),
+PARTITION m_2021_07 VALUES LESS THAN (TO_DATE(20210801,'YYYYMMDD')),
+PARTITION m_2021_08 VALUES LESS THAN (TO_DATE(20210901,'YYYYMMDD')),
+PARTITION m_2021_09 VALUES LESS THAN (TO_DATE(20211001,'YYYYMMDD')),
+PARTITION m_2021_10 VALUES LESS THAN (TO_DATE(20211101,'YYYYMMDD')),
+PARTITION m_2021_11 VALUES LESS THAN (TO_DATE(20211201,'YYYYMMDD')),
+PARTITION m_2021_12 VALUES LESS THAN (TO_DATE(20220101,'YYYYMMDD'))
+
+);
+
+
+ALTER TABLE orders ADD CONSTRAINT order_pk PRIMARY KEY ( code );
+---------------------------------------------------------------
+
+-------------------------product--------------------------------
+CREATE TABLE product (
+    code         NUMBER(4) GENERATED AS IDENTITY NOT NULL ,
+    NAME         VARCHAR2(20) NOT NULL,
+    price        NUMBER(6) NOT NULL,
+    image_path   VARCHAR2(200) NOT NULL,
+    DESCRIPTION  CLOB NOT NULL
+);
+
+
+ALTER TABLE product ADD CONSTRAINT product_pk PRIMARY KEY ( code );
+------------------------------------------------------------------------------------
+
+-------------------------wishlist--------------------------------
+CREATE CLUSTER cls_wishlist_member_id(member_id VARCHAR2(20))
+SIZE 1K
+TABLESPACE USERS;
+
+
+CREATE INDEX idx_cls_wishlist_member_id
+ ON CLUSTER cls_wishlist_member_id
+ TABLESPACE USERS;
+
+--##시퀀스 자동 증분 위해 identity column 사용--
+CREATE TABLE wishlist (
+    code          NUMBER(4) GENERATED AS IDENTITY START WITH 1000 NOT NULL,
+    product_code  NUMBER(4) NOT NULL,
+    start_date    DATE NOT NULL,
+    end_date      DATE,
+    member_id       VARCHAR2(20) NOT NULL
+) CLUSTER cls_wishlist_member_id(member_id);
+
+--**MEMBER_ID로 검색 많이 해서 인덱스 생성--
+CREATE INDEX wishlist_member_id_idx ON wishlist(member_id);
+
+ALTER TABLE wishlist ADD CONSTRAINT wishlist_pk PRIMARY KEY ( code );
+
+
+--## wishlist 테이블은 product와 조인이 자주 발생한다. 조인이 자주 일어나는 컬럼들을 묶어 view로 생성
+CREATE OR REPLACE VIEW wishlist_mem_prod_join
+AS
+-- 위시리스트 코드, 멤버id, 상품 코드, 상품 가격, 상품 이미지 경로, enddate 추출
+SELECT w.code wishlist_code, w.member_id, P.code product_code, 
+       P.price, P.image_path, w.end_date
+FROM wishlist w JOIN product P
+                  ON w.product_code = P.code;
+----------------------------------------------------------------------------------
+
+---------------------------외래키 제약조건 생성--------------------------------------
+ALTER TABLE fundingjoin
+    ADD CONSTRAINT fundingjoin_member_fk FOREIGN KEY ( member_id )
+        REFERENCES MEMBER ( ID );
+
+
+ALTER TABLE fundingjoin
+    ADD CONSTRAINT fundingjoin_wishlist_fk FOREIGN KEY ( wishlist_code )
+        REFERENCES wishlist ( code );
+
+
+ALTER TABLE orders
+    ADD CONSTRAINT orders_member_fk FOREIGN KEY ( member_id )
+        REFERENCES MEMBER ( ID );
+
+
+ALTER TABLE orders
+    ADD CONSTRAINT orders_product_fk FOREIGN KEY ( product_code )
+        REFERENCES product ( code );
+
+
+ALTER TABLE wishlist
+    ADD CONSTRAINT wishlist_member_fk FOREIGN KEY ( member_id )
+        REFERENCES MEMBER ( ID );
+
+
+ALTER TABLE wishlist
+    ADD CONSTRAINT wishlist_product_fk FOREIGN KEY ( product_code )
+        REFERENCES product ( code );
+
+--------------------------------------------------------------------------
