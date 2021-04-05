@@ -49,12 +49,12 @@
                         </Label>
                         <HBox prefHeight="50.0" prefWidth="200.0">
                            <children>
-                              <Label fx:id="productPrice" prefHeight="50.0" prefWidth="40.0" text="가격">
+                              <Label fx:id="productPrice" prefHeight="50.0" prefWidth="62.0" text="가격">
                                  <HBox.margin>
                                     <Insets left="30.0" />
                                  </HBox.margin>
                               </Label>
-                              <Label prefHeight="50.0" text="원">
+                              <Label prefHeight="50.0" prefWidth="56.0" text="원">
                                  <HBox.margin>
                                     <Insets />
                                  </HBox.margin>
@@ -120,7 +120,7 @@
                            </HBox.margin>
                         </Label>
                         <Label prefHeight="40.0" prefWidth="36.0" text="point" />
-                        <Button fx:id="confirmusingpoint" mnemonicParsing="false" onAction="#UsePoint" prefHeight="23.0" prefWidth="62.0" text="사용">
+                        <Button fx:id="confirmusingpoint" mnemonicParsing="false" onAction="#UsePoint" prefHeight="23.0" prefWidth="62.0" style="-fx-background-color: #CC9933;" text="사용" textFill="WHITE">
                            <HBox.margin>
                               <Insets left="10.0" top="10.0" />
                            </HBox.margin>
@@ -149,7 +149,7 @@
                </children>
             </VBox>
             <Line endX="415.29290771484375" endY="0.06845855712890625" startX="-100.0" />
-            <Button fx:id="confirmorder" mnemonicParsing="false" onAction="#ConfirmOrder" prefHeight="30.0" prefWidth="80.0" text="주문하기">
+            <Button fx:id="confirmorder" mnemonicParsing="false" onAction="#ConfirmOrder" prefHeight="30.0" prefWidth="80.0" style="-fx-background-color: #CC9933;" text="주문하기" textFill="WHITE">
                <VBox.margin>
                   <Insets left="215.0" top="30.0" />
                </VBox.margin>

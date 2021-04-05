@@ -10,67 +10,128 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<StackPane fx:id="sp" prefHeight="660.0" prefWidth="450.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.WishListController">
-	<children>
-		<VBox alignment="CENTER" prefHeight="660.0" prefWidth="450.0">
-			<padding>
-				<Insets topRightBottomLeft="10" />
-			</padding>
-			<children>
-				<HBox prefHeight="155.0" prefWidth="430.0" spacing="10.0" VBox.vgrow="SOMETIMES">
-					<children>
-						<ImageView fx:id="my_profile" fitHeight="150.0" fitWidth="124.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS" />
-						<VBox alignment="CENTER" prefHeight="159.0" prefWidth="167.0" spacing="10.0" HBox.hgrow="ALWAYS">
-							<children>
-								<Label fx:id="Label_id" text="benny7777" />
-								<Label fx:id="Label_name" text="Label" />
-							</children>
-						</VBox>
-						<VBox alignment="CENTER_RIGHT" prefHeight="150.0" prefWidth="147.0" spacing="10.0" HBox.hgrow="NEVER">
-							<children>
+<StackPane fx:id="sp" prefHeight="660.0" prefWidth="450.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.WishListController">
+   <children>
+      <VBox alignment="CENTER" prefHeight="660.0" prefWidth="450.0">
+         <padding>
+            <Insets topRightBottomLeft="10" />
+         </padding>
+         <children>
+            <HBox prefHeight="155.0" prefWidth="430.0" spacing="10.0" style="-fx-border-color:black; -fx-border-width:0 0 1 0;" VBox.vgrow="SOMETIMES">
+               <children>
+                  <ImageView fx:id="my_profile" fitHeight="150.0" fitWidth="124.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS" />
+                  <VBox alignment="CENTER" prefHeight="150.0" prefWidth="156.0" spacing="10.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <HBox prefHeight="20.0" prefWidth="101.0">
+                           <children>
+                              <Label prefHeight="20.0" prefWidth="30.0" style="-fx-font-family: GodoM;" stylesheets="@../../../../../css/Frame.css" text="ID:">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font></Label>
+                              <Label fx:id="Label_id" prefHeight="20.0" text="benny7777">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <HBox prefHeight="20.0" prefWidth="200.0">
+                           <children>
+                              <Label prefHeight="20.0" prefWidth="30.0" stylesheets="@../../../../../css/Frame.css" text="이름:">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font></Label>
+                              <Label fx:id="Label_name" prefHeight="20.0" prefWidth="69.0" text="Label">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </Label>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER_RIGHT" prefHeight="150.0" prefWidth="232.0" spacing="10.0" style="-fx-border-color:black; -fx-border-width:0 0 0 1" HBox.hgrow="NEVER">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" prefHeight="20.0" prefWidth="92.0">
+                           <children>
+                              <Label prefHeight="14.0" prefWidth="91.0" stylesheets="@../../../../../css/Frame.css" text="내 포인트:">
+                                 <HBox.margin>
+                                    <Insets left="7.0" />
+                                 </HBox.margin></Label>
+                              <HBox alignment="TOP_RIGHT" prefHeight="20.0" prefWidth="77.0">
+                                 <children>
+            
+                                    <Label fx:id="Label_point" prefHeight="20.0" text="point" />
+                                    <Label prefHeight="20.0" text="point">
+                                       <HBox.margin>
+                                          <Insets left="5.0" />
+                                       </HBox.margin></Label>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </HBox>
+                        <HBox prefHeight="20.0" prefWidth="167.0">
+                           <children>
+                              <Label prefHeight="14.0" prefWidth="97.0" stylesheets="@../../../../../css/Frame.css" text="총 펀딩 금액:">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets left="7.0" />
+                                 </HBox.margin></Label>
+                              <HBox alignment="TOP_RIGHT" prefHeight="20.0" prefWidth="80.0">
+                                 <children>
+                                    <Label fx:id="Label_funding_money" prefHeight="20.0" prefWidth="45.0" text="fundingmoney" />
+                                    <Label prefHeight="20.0" prefWidth="16.0" text="원">
+                                       <HBox.margin>
+                                          <Insets left="5.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </HBox>
+                     </children>
+                     <HBox.margin>
+                        <Insets right="5.0" />
+                     </HBox.margin>
+                  </VBox>
+               </children>
+            </HBox>
+            <GridPane hgap="10.0" prefHeight="511.0" prefWidth="430.0" vgap="10.0" VBox.vgrow="SOMETIMES">
+               <padding>
+                  <Insets topRightBottomLeft="10" />
+               </padding>
+               <children>
 
-								<Label fx:id="Label_point" text="point" />
-								<Label fx:id="Label_funding_money" text="fundingmoney" />
-							</children>
-							<HBox.margin>
-								<Insets right="5.0" />
-							</HBox.margin>
-						</VBox>
-					</children>
-				</HBox>
-				<GridPane hgap="10.0" prefHeight="511.0" prefWidth="430.0" vgap="10.0" VBox.vgrow="SOMETIMES">
-					<padding>
-						<Insets topRightBottomLeft="10" />
-					</padding>
-					<children>
 
-
-						<Label fx:id="imageLabel1" text="상품1" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-						<ImageView fx:id="imageView1" preserveRatio="true" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-						<Label fx:id="imageLabel2" text="상품2" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-						<ImageView fx:id="imageView2" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-						<Label fx:id="imageLabel3" text="상품3" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-						<ImageView fx:id="imageView3" preserveRatio="true" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-						<Label fx:id="imageLabel4" text="상품4" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-						<ImageView fx:id="imageView4" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-						<Button onAction="#handleBtnPrevAction" text="이전" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-						<Button onAction="#handleBtnNextAction" text="다음" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-					</children>
-					<columnConstraints>
-						<ColumnConstraints />
-						<ColumnConstraints />
-					</columnConstraints>
-					<rowConstraints>
-						<RowConstraints />
-						<RowConstraints />
-						<RowConstraints />
-						<RowConstraints />
-						<RowConstraints />
-						<RowConstraints />
-					</rowConstraints>
-				</GridPane>
-			</children>
-		</VBox>
-	</children>
+                  <Label fx:id="imageLabel1" text="상품1" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+                  <ImageView fx:id="imageView1" preserveRatio="true" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <Label fx:id="imageLabel2" text="상품2" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+                  <ImageView fx:id="imageView2" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <Label fx:id="imageLabel3" text="상품3" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+                  <ImageView fx:id="imageView3" preserveRatio="true" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <Label fx:id="imageLabel4" text="상품4" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="4" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+                  <ImageView fx:id="imageView4" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                  <Button onAction="#handleBtnPrevAction" style="-fx-background-color: #CC9933;" text="이전" textFill="WHITE" GridPane.columnIndex="0" GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+                  <Button onAction="#handleBtnNextAction" style="-fx-background-color: #CC9933;" text="다음" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="5" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+               </children>
+               <columnConstraints>
+                  <ColumnConstraints />
+                  <ColumnConstraints />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+               </rowConstraints>
+            </GridPane>
+         </children>
+      </VBox>
+   </children>
 </StackPane>

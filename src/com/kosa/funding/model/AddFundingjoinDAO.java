@@ -38,21 +38,19 @@ public class AddFundingjoinDAO {
 				System.err.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage());
 			}
 			
-			runSP = "{call member_pack.procedure_substract_funding_money_member(?,?) }";
-			callableStatement = conn.prepareCall(runSP);
-			callableStatement.setString(1, member_id);
-			callableStatement.setInt(2, fund_money);
-			
-			try {
-				callableStatement.execute();
-				return_val =callableStatement.getInt(1);
-				callableStatement.close();
-
-			} catch (SQLException e) {
-				System.out.println("procedure_substract_funding_money_member 프로시저에서 에러 발생!");
-				System.err.format("SQL State: %s", e.getSQLState());
-				System.err.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage());
-			}
+			/*
+			 * runSP = "{call member_pack.procedure_substract_funding_money_member(?,?) }";
+			 * callableStatement = conn.prepareCall(runSP); callableStatement.setString(1,
+			 * member_id); callableStatement.setInt(2, fund_money);
+			 * 
+			 * try { callableStatement.execute(); return_val =callableStatement.getInt(1);
+			 * callableStatement.close();
+			 * 
+			 * } catch (SQLException e) {
+			 * System.out.println("procedure_substract_funding_money_member 프로시저에서 에러 발생!");
+			 * System.err.format("SQL State: %s", e.getSQLState());
+			 * System.err.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()); }
+			 */
 			
 			
 		} catch (SQLException e) {

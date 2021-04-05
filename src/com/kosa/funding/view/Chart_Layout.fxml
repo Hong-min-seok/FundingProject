@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.AreaChart?>
 <?import javafx.scene.chart.BarChart?>
 <?import javafx.scene.chart.CategoryAxis?>
@@ -10,14 +11,17 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="660.0" prefWidth="480.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.chartController">
+<AnchorPane prefHeight="660.0" prefWidth="480.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.chartController">
    <children>
       <VBox prefHeight="660.0" prefWidth="508.0">
          <children>
             <Label prefHeight="15.0" prefWidth="461.0" text="월별 주문현황 (2020/01/01 ~ 현재)">
                <font>
                   <Font size="14.0" />
-               </font></Label>
+               </font>
+               <VBox.margin>
+                  <Insets left="20.0" top="10.0" />
+               </VBox.margin></Label>
             <BarChart fx:id="barChart" prefHeight="227.0" prefWidth="545.0">
               <xAxis>
                 <CategoryAxis side="BOTTOM" />
@@ -29,12 +33,18 @@
             <Label prefHeight="15.0" prefWidth="455.0" text="연령대별 펀딩현황">
                <font>
                   <Font size="14.0" />
-               </font></Label>
+               </font>
+               <VBox.margin>
+                  <Insets left="20.0" />
+               </VBox.margin></Label>
             <PieChart fx:id="pieChart" prefHeight="186.0" prefWidth="227.0" />
             <Label prefHeight="15.0" prefWidth="581.0" text="금액대별 펀딩현황">
                <font>
                   <Font size="14.0" />
-               </font></Label>
+               </font>
+               <VBox.margin>
+                  <Insets left="20.0" />
+               </VBox.margin></Label>
             <AreaChart fx:id="areaChart" prefHeight="203.0" prefWidth="581.0">
               <xAxis>
                 <CategoryAxis side="BOTTOM" />

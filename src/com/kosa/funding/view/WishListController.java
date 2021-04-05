@@ -273,10 +273,10 @@ public class WishListController implements Initializable {
 			e.printStackTrace();
 		}
 
-		Label_point.setText("내 포인트 : " + mypoint);
-		Label_funding_money.setText("총 펀딩포인트 : " + Integer.toString(vo.getTotal_funding_money()));
+		Label_point.setText(Integer.toString(mypoint));
+		Label_funding_money.setText(Integer.toString(vo.getTotal_funding_money()));
 		Label_id.setText(this.target_id);
-		Label_name.setText(vo.getName().toString() + "님의 위시리스트");
+		Label_name.setText(vo.getName().toString());
 
 		try {
 			for (int i = page_num * 4 - 4; i < page_num * 4; i++) {

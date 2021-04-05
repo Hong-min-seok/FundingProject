@@ -1,27 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
 
-<AnchorPane fx:id="prod_detail" prefHeight="660.0" prefWidth="450.0" style="-fx-background-color:white" stylesheets="@Theme.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.StoreProductOverviewController">
+<AnchorPane fx:id="prod_detail" prefHeight="700.0" prefWidth="444.0" style="-fx-background-color:white" stylesheets="@Theme.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.StoreProductOverviewController">
    <children>
-      <Button fx:id="back_store" layoutY="21.0" mnemonicParsing="false" onAction="#handleBtnBackAction" text="돌아가기" />
-      <VBox alignment="TOP_CENTER" layoutY="54.0" prefHeight="646.0" prefWidth="451.0" style="-fx-background-color: white;">
+      <Button fx:id="back_store" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleBtnBackAction" style="-fx-background-color: #CC9933;" text="돌아가기" textFill="WHITE" />
+      <VBox alignment="TOP_CENTER" layoutY="54.0" prefHeight="646.0" prefWidth="482.0" style="-fx-background-color: white;">
          <children>
-            <Label alignment="CENTER" prefHeight="10.0" prefWidth="451.0" styleClass="title" stylesheets="@Theme.css" text="제품 상세" textAlignment="CENTER" />
-            <ImageView fx:id="productImage" fitHeight="325.0" fitWidth="451.0" pickOnBounds="true" preserveRatio="true" />
-            <HBox alignment="CENTER" prefHeight="36.0" prefWidth="451.0">
+            <Label alignment="CENTER" prefHeight="40.0" prefWidth="451.0" styleClass="title" stylesheets="@Theme.css" text="제품 상세" textAlignment="CENTER" />
+            <Line endX="160.17266845703125" endY="-0.621320366859436" startX="-354.1202392578125" />
+            <ImageView fx:id="productImage" fitHeight="325.0" fitWidth="486.0" pickOnBounds="true" preserveRatio="true" />
+            <Line endX="413.5" startX="-100.0" />
+            <HBox alignment="CENTER_LEFT" prefHeight="36.0" prefWidth="451.0">
                <children>
-                  <Label fx:id="productName" alignment="CENTER" prefHeight="36.0" prefWidth="242.0" styleClass="productname" stylesheets="@Theme.css" text="product name" textAlignment="CENTER" />
-                  <Button fx:id="add_wishlist" mnemonicParsing="false" onAction="#handleBtnAddAction" text="위시리스트에 추가" />
+                  <Label fx:id="productName" prefHeight="36.0" prefWidth="309.0" styleClass="productname" stylesheets="@Theme.css" text="product name" textAlignment="CENTER">
+                     <HBox.margin>
+                        <Insets left="20.0" />
+                     </HBox.margin></Label>
+                  <Button fx:id="add_wishlist" mnemonicParsing="false" onAction="#handleBtnAddAction" style="-fx-background-color: #CC9933;" text="위시리스트에 추가" textFill="WHITE" />
                </children>
             </HBox>
-            <Label fx:id="productPrice" alignment="CENTER" prefHeight="40.0" prefWidth="450.0" styleClass="productprice" stylesheets="@Theme.css" text="product price" textAlignment="CENTER" />
-            <Label fx:id="productDescription" alignment="CENTER" prefHeight="40.0" prefWidth="450.0" styleClass="productdescription" stylesheets="@Theme.css" text="product descirption" />
+            <HBox prefHeight="40.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="productPrice" prefHeight="39.0" prefWidth="80.0" styleClass="productprice" stylesheets="@Theme.css" text="product price">
+                     <HBox.margin>
+                        <Insets left="20.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Label prefHeight="40.0" text="원" />
+               </children>
+            </HBox>
+            <Label fx:id="productDescription" prefHeight="40.0" prefWidth="450.0" styleClass="productdescription" stylesheets="@Theme.css" text="product descirption">
+               <VBox.margin>
+                  <Insets left="20.0" />
+               </VBox.margin></Label>
          </children>
       </VBox>
    </children>

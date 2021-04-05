@@ -5,10 +5,10 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="203.0" prefWidth="260.0" style="-fx-background-color: #264836;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.WishListProductOverviewController">
+<AnchorPane prefHeight="203.0" prefWidth="260.0" style="-fx-background-color: #264836;" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kosa.funding.view.WishListProductOverviewController">
 	<children>
-      <Button fx:id="PopupSumit" layoutX="196.0" layoutY="139.0" mnemonicParsing="false" style="-fx-background-color: #CC9933;" text="전송" />
-      <TextField fx:id="PopupPointFeild" layoutX="147.0" layoutY="100.0" />
-      <Text fx:id="PopupMessage" fill="WHITE" layoutY="77.0" strokeType="OUTSIDE" strokeWidth="0.0" text="포인트를 입력하세요." textAlignment="CENTER" wrappingWidth="450.0000009536743" />
+      <Button fx:id="PopupSumit" layoutX="207.0" layoutY="138.0" mnemonicParsing="false" style="-fx-background-color: #CC9933;" text="전송" />
+      <TextField fx:id="PopupPointFeild" layoutX="147.0" layoutY="80.0" />
+      <Text fx:id="PopupMessage" fill="WHITE" layoutX="2.0" layoutY="64.0" strokeType="OUTSIDE" strokeWidth="0.0" text="포인트를 입력하세요." textAlignment="CENTER" wrappingWidth="450.0000009536743" />
   </children>
 </AnchorPane>

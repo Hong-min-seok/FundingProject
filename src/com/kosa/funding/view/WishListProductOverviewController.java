@@ -55,6 +55,9 @@ public class WishListProductOverviewController implements Initializable {
 
 	@FXML
 	private ListView<HBox> funding_info;
+	
+	@FXML
+	private Label productfund;
 
 	private Popup popup;
 
@@ -87,6 +90,11 @@ public class WishListProductOverviewController implements Initializable {
 		System.out.println("위시리스트 코드 세팅");
 		System.out.println(code);
 		this.wish_code = code;
+		
+		TrioClass tc = new TrioClass();
+		fundingDAO dao_fund = new fundingDAO();
+		tc = dao_fund.list(wish_code);
+		productfund.setText("펀딩받은 금액 : " + tc.getSum());
 	}
 
 	public void setProductvo(myProductVO data) {
@@ -204,7 +212,7 @@ public class WishListProductOverviewController implements Initializable {
 				e.printStackTrace();
 			}
 		}
-		productFunding.setText("펀딩받은 금액 : " + tc.getSum());
+		productfund.setText("펀딩받은 금액 : " + tc.getSum());
 	}
 
 }
