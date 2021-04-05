@@ -36,7 +36,7 @@ public class ProductDAO {
 		String description;
 	    ArrayList<ProductVO> list = new ArrayList<ProductVO>();
 	try {
-		String runSP = "{ call procedure_select_multiple_product(?) }";
+		String runSP = "{ call product_pack.procedure_select_multiple_product(?) }";
 		callableStatement = conn.prepareCall(runSP);
 		callableStatement.registerOutParameter(1, OracleTypes.CURSOR);
 		

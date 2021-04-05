@@ -249,7 +249,7 @@ public class MemberDAO {
 
 		try {
 			conn = DBConnection.getConnection();
-			String runSP = "{ call procedure_substract_member(?,?,?,?,?,?) }";
+			String runSP = "{ call member_pack.procedure_substract_member(?,?,?,?,?,?) }";
 			cstmt = conn.prepareCall(runSP);
 			cstmt.setString(1, input_id);
 			cstmt.registerOutParameter(2, java.sql.Types.VARCHAR);

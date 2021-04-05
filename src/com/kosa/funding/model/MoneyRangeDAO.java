@@ -27,7 +27,7 @@ public class MoneyRangeDAO {
 		ArrayList<MoneyRangeVO> list = new ArrayList<MoneyRangeVO>();
 
 		try {
-			String runSP = "{ call funding_count_money_range(?,?) }";
+			String runSP = "{ call graph_pack.funding_count_money_range(?,?) }";
 			callableStatement = conn.prepareCall(runSP);
 			callableStatement.setString(1, ID);
 			callableStatement.registerOutParameter(2, OracleTypes.CURSOR);

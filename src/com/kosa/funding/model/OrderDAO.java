@@ -14,7 +14,7 @@ public class OrderDAO {
 	public void insertOrder(String member_id, int product_code, int wish_code) {
 		
 		try {
-			String query = "{call procedure_insert_product_orders(?,?) }";
+			String query = "{call orders_pack.procedure_insert_product_orders(?,?) }";
 			CallableStatement callableStatement = conn.prepareCall(query);
 
 			callableStatement.setString(1, member_id);

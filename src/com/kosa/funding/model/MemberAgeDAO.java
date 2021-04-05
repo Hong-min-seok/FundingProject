@@ -17,7 +17,7 @@ public class MemberAgeDAO {
 		int age = 0;
 	
 		try {
-			String runSP = "{ call fundingjoin_member_age(?,?) }";
+			String runSP = "{ call graph_pack.fundingjoin_member_age(?,?) }";
 			callableStatement = conn.prepareCall(runSP);
 			callableStatement.setString(1, input_id);
 			callableStatement.registerOutParameter(2, java.sql.Types.INTEGER);

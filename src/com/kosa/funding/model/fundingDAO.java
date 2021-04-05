@@ -25,7 +25,7 @@ public class fundingDAO {
 		TrioClass tc = new TrioClass();
 	    ArrayList<fundingVO> list = new ArrayList<fundingVO>();
 	try {
-		String runSP = "{ call funding_join_list(?,?) }";
+		String runSP = "{ call wishlist_pack.funding_join_list(?,?) }";
 		callableStatement = conn.prepareCall(runSP);
 		callableStatement.setInt(1,input_code);
 		callableStatement.registerOutParameter(2, OracleTypes.CURSOR);

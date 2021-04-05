@@ -37,7 +37,7 @@ public class myProductDAO {
 		String description;
 	    ArrayList<myProductVO> list = new ArrayList<myProductVO>();
 	try {
-		String runSP = "{ call wishlist_product_join_info(?,?) }";
+		String runSP = "{ call wishlist_pack.wishlist_product_join_info(?,?) }";
 		callableStatement = conn.prepareCall(runSP);
 		callableStatement.setString(1, input_id);
 		callableStatement.registerOutParameter(2, OracleTypes.CURSOR);

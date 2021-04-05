@@ -23,7 +23,7 @@ public class OrdersRangeDAO {
 		ArrayList<OrdersRangeVO> list = new ArrayList<OrdersRangeVO>();
 	
 		try {
-			String runSP = "{ call orders_range_count(?,?) }";
+			String runSP = "{ call graph_pack.orders_range_count(?,?) }";
 			callableStatement = conn.prepareCall(runSP);
 			callableStatement.setString(1, input_id);
 			callableStatement.registerOutParameter(2, OracleTypes.CURSOR);
