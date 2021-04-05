@@ -1,165 +1,203 @@
+--2021.04.05 10:28
 -----------------------------------------------------------------------------------
 -------------------------- wishlist 관련 패키지 선언부 -------------------------------
 -----------------------------------------------------------------------------------
-drop package wishlist_pack;
-create or replace package wishlist_pack is
+DROP PACKAGE wishlist_pack;
+
+CREATE OR REPLACE PACKAGE wishlist_pack IS
 
     -- wishlist에 상품 추가하는 프로시저 --
-    procedure insert_wishlist_procedure
-        (v_member_id    in member.id%type,       -- 현재 접속중인 계정 id 
-         v_product_code in product.code%type);   -- 위시리스트에 담을 상품 코드
+    FUNCTION procedure_insert_wishlist
+        (v_member_id    IN MEMBER.ID%TYPE,       -- 현재 접속중인 계정 id 
+         v_product_code IN product.code%TYPE)    -- 위시리스트에 담을 상품 코드
+    RETURN NUMBER;   
+
          
     -- wishlist 목록 추출하는 프로시저 --
-    procedure select_all_wishlist_procedure
-        (v_member_id in member.id%type,          -- 확인하고자하는 위시리스트의 계정 id
-         rec         out SYS_REFCURSOR);         -- 화면에 보여줄 정보를 받기 위한 커서
+    PROCEDURE procedure_select_all_wishlist
+        (v_member_id IN MEMBER.ID%TYPE,          -- 확인하고자하는 위시리스트의 계정 id
+         rec         OUT SYS_REFCURSOR);         -- 화면에 보여줄 정보를 받기 위한 커서
     
     -- wishlist 펀딩 종료되는 프로시저 --     
-    procedure end_wishlist_procedure
-        (v_code in wishlist.code%type);          -- 펀딩 종료할 상품에 대한 위시리스트 코드
+    PROCEDURE procedure_end_wishlist
+        (v_code IN wishlist.code%TYPE);          -- 펀딩 종료할 상품에 대한 위시리스트 코드
     
     -- wishlist에 담긴 상품의 총 가격 반환하는 함수 --  
-    function total_price_wishlist_function
-        (v_member_id in member.id%type)          -- 계정 id 입력
-    return product.price%type;                   -- price와 같은 타입을 리턴해준다
+    FUNCTION function_total_price_wishlist
+        (v_member_id IN MEMBER.ID%TYPE)          -- 계정 id 입력
+    RETURN product.price%TYPE;                   -- price와 같은 타입을 리턴해준다
+    
+    --한 멤버의 wishlist에 들어있는 product의 정보 추출
+    PROCEDURE wishlist_product_join_info(
+        w_id IN VARCHAR2,
+        w_cursor OUT SYS_REFCURSOR
+    );
+    
+    -- 한 위시리스트에 펀딩한 정보 추출
+    PROCEDURE funding_join_list(
+        w_code IN NUMBER,
+        f_cursor OUT SYS_REFCURSOR
+    );
          
-end wishlist_pack;
+END wishlist_pack;
 /
 
 -----------------------------------------------------------------------------------
 -------------------------- wishlist 관련 패키지 바디 --------------------------------
 -----------------------------------------------------------------------------------
-create or replace package body wishlist_pack is
+CREATE OR REPLACE PACKAGE BODY wishlist_pack IS
 
     -- wishlist에 상품 추가하는 프로시저 --
-    procedure insert_wishlist_procedure
-        (v_member_id    in member.id%type,      -- 현재 접속중인 계정 id 
-         v_product_code in product.code%type)   -- 위시리스트에 담을 상품 코드
-    is
-        cursor wishlist_chk is  -- 위시리스트에 중복 상품이 존재하는지 확인하기 위한 커서
-            select *
-            from wishlist
-            where member_id = v_member_id 
-                    and product_code = v_product_code 
-                    and end_date is null;
-    begin
-        for rec in wishlist_chk     -- 위시리스트에 동일 상품이 존재하는지 확인
-            loop
-                if wishlist_chk%found then  -- 동일 상품이 존재하면 에러 발생
-                    dbms_output.put_line('해당 상품이 이미 위시리스트에 존재합니다.');
-                    raise_application_error(-20001, '해당 상품이 이미 위시리스트에 존재합니다.');
-                end if;
-            end loop;
+    FUNCTION procedure_insert_wishlist
+        (v_member_id    IN MEMBER.ID%TYPE,      -- 현재 접속중인 계정 id 
+         v_product_code IN product.code%TYPE) RETURN NUMBER   -- 위시리스트에 담을 상품 코드
+    IS
+        CURSOR wishlist_chk IS  -- 위시리스트에 중복 상품이 존재하는지 확인하기 위한 커서
+            SELECT *
+            FROM wishlist
+            WHERE member_id = v_member_id 
+                    AND product_code = v_product_code 
+                    AND end_date IS NULL;
+    BEGIN
+        FOR rec IN wishlist_chk     -- 위시리스트에 동일 상품이 존재하는지 확인
+            LOOP
+                IF wishlist_chk%found THEN  -- 동일 상품이 존재하면 에러 발생
+                   RETURN 0;
+                END IF;
+            END LOOP;
     
-        insert into wishlist(product_code, start_date, end_date, member_id) -- 동일 상품이 없다면 테이블에 insert
-        values(v_product_code, sysdate, null, v_member_id);
+        INSERT INTO wishlist(product_code, start_date, end_date, member_id) -- 동일 상품이 없다면 테이블에 insert
+        VALUES(v_product_code, sysdate, NULL, v_member_id);
         
-        commit;
-    end;
+        COMMIT;
+        RETURN 1;
+    END;
     
     -- wishlist 목록 추출하는 프로시저 --
-    procedure select_all_wishlist_procedure
-        (v_member_id in member.id%type,         -- 확인하고자하는 위시리스트의 계정 id
-         rec         out SYS_REFCURSOR)         -- 화면에 보여줄 정보를 받기 위한 커서
+    PROCEDURE procedure_select_all_wishlist
+        (v_member_id IN MEMBER.ID%TYPE,         -- 확인하고자하는 위시리스트의 계정 id
+         rec         OUT SYS_REFCURSOR)         -- 화면에 보여줄 정보를 받기 위한 커서
 
-    is
-    begin
-        open rec for    -- 화면에 보여줄 정보를 커서에 저장
+    IS
+    BEGIN
+        OPEN rec FOR    -- 화면에 보여줄 정보를 커서에 저장
             -- 위시리스트 코드, 상품코드, 상품가격, 이미지 경로 추출
-            select wishlist_code, product_code, 
+            SELECT wishlist_code, product_code, 
                    price, image_path
-            from wishlist_mem_prod_join
-            where member_id = v_member_id and end_date is null;
-    end;
+            FROM wishlist_mem_prod_join
+            WHERE member_id = v_member_id AND end_date IS NULL;
+    END;
     
     -- wishlist 펀딩 종료되는 프로시저 --    
-    procedure end_wishlist_procedure
-        (v_code in wishlist.code%type) -- 펀딩 종료할 상품에 대한 위시리스트 코드
-    is
-    begin
-        update wishlist set end_date = sysdate -- enddate를 현재 날짜로 설정
-        where code = v_code;
-        commit;
-    end;
+    PROCEDURE procedure_end_wishlist
+        (v_code IN wishlist.code%TYPE) -- 펀딩 종료할 상품에 대한 위시리스트 코드
+    IS
+    BEGIN
+        UPDATE wishlist SET end_date = sysdate -- enddate를 현재 날짜로 설정
+        WHERE code = v_code;
+        COMMIT;
+    END;
     
     -- wishlist에 담긴 상품의 총 가격 반환하는 함수 -- 
-    function total_price_wishlist_function
-        (v_member_id in member.id%type) -- 계정 id 입력
-    return product.price%type   -- price와 같은 타입을 리턴해준다
-    is
-        v_total_price product.price%type;
-    begin
-        select sum(price) into v_total_price    -- 상품 총 가격 계산
-        from wishlist_mem_prod_join
-        where member_id = v_member_id and end_date is null;
+    FUNCTION function_total_price_wishlist
+        (v_member_id IN MEMBER.ID%TYPE) -- 계정 id 입력
+    RETURN product.price%TYPE   -- price와 같은 타입을 리턴해준다
+    IS
+        v_total_price product.price%TYPE;
+    BEGIN
+        SELECT SUM(price) INTO v_total_price    -- 상품 총 가격 계산
+        FROM wishlist_mem_prod_join
+        WHERE member_id = v_member_id AND end_date IS NULL;
         
-        return v_total_price;   -- total price 리턴
-    end;
+        RETURN v_total_price;   -- total price 리턴
+    END;
+    
+    --한 멤버의 wishlist에 들어있는 product의 정보 추출
+    PROCEDURE wishlist_product_join_info(
+        w_id IN VARCHAR2,
+        w_cursor OUT SYS_REFCURSOR
+    )
+    IS
+    BEGIN
+        OPEN w_cursor FOR 
+        SELECT w.code, P.code, P.NAME, P.price, P.image_path, P.DESCRIPTION
+        FROM wishlist w, product P
+        WHERE w.product_code = P.code AND w.member_id = w_id AND w.end_date IS NULL;
+    END;
+    
+    -- 한 위시리스트에 펀딩한 정보 추출
+    PROCEDURE funding_join_list(
+        w_code IN NUMBER,
+        f_cursor OUT SYS_REFCURSOR
+    )
+    IS
+    BEGIN
+        OPEN f_cursor FOR 
+        SELECT fund_money, member_id
+        FROM fundingjoin
+        WHERE wishlist_code = w_code;
+    END;
 
-end wishlist_pack;
+END wishlist_pack;
 /
------------------------------------------------------------------------------------
-
 
 -------------------------------------------
 ---------fundingjoin 패키지 선언부------------
 -------------------------------------------
 DROP PACKAGE fundingjoin_pack;
 
-DROP FUNCTION fundingjoin_insert;
-
-DROP FUNCTION fundingjoin_money_update;
-
-DROP PROCEDURE fundingjoin_check;
-
-PURGE RECYCLEBIN;
-
 CREATE OR REPLACE PACKAGE fundingjoin_pack IS
-    PROCEDURE fundingjoin_insert (
+
+    -- 해당 위시리스트에 펀딩한적 없던 사람 insert(아래 choice 프로시저만 이용하면됨)
+    PROCEDURE procedure_insert_fundingjoin (
         fund_money_a           IN  fundingjoin.fund_money%TYPE,
         wish_code_a            IN  fundingjoin.wishlist_code%TYPE,
         member_id_a            IN  fundingjoin.member_id%TYPE,
         target_id              IN  VARCHAR2,
         insert_money_possible  IN  NUMBER
     );
-
-    PROCEDURE fundingjoin_money_update (
+    
+    -- 해당 위시리스트에 펀딩했던 적 있는 사람 펀딩금액 update(choice만 사용하세요)
+    PROCEDURE procedure_update_money_fundingjoin (
         fund_money_a           IN  fundingjoin.fund_money%TYPE,
         wish_code_a            IN  fundingjoin.wishlist_code%TYPE,
         member_id_a            IN  fundingjoin.member_id%TYPE,
         target_id              IN  VARCHAR2,
         insert_money_possible  IN  NUMBER
     );
-
-    FUNCTION fundingjoin_choice (
+    
+    -- insert의 경우인지 update경우인지 판단하여 작업+ 나머지 조건 검사
+    FUNCTION function_choice_fundingjoin (
         fund_money_a  IN  fundingjoin.fund_money%TYPE,
         wish_code_a   IN  fundingjoin.wishlist_code%TYPE,
         member_id_a   IN  fundingjoin.member_id%TYPE
-    ) RETURN NUMBER;
-
-    PROCEDURE member_funding_update (
+    ) RETURN NUMBER; -- 성공 1, 실패 129
+    
+    -- 펀딩 받은사람의 total_fund_money업데이트
+    PROCEDURE procedure_update_total_money_member (
         target_id     IN  VARCHAR2,
         insert_money  IN  NUMBER
     );
+    
 END;
 /
-
-
 
 -------------------------------------------
 ---------fundingjoin 패키지 바디------------
 -------------------------------------------
 CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
-
-    PROCEDURE fundingjoin_insert (
+    
+    PROCEDURE procedure_insert_fundingjoin (
         fund_money_a           IN  fundingjoin.fund_money%TYPE,
         wish_code_a            IN  fundingjoin.wishlist_code%TYPE,
         member_id_a            IN  fundingjoin.member_id%TYPE,
         target_id              IN  VARCHAR2,
         insert_money_possible  IN  NUMBER
-    ) IS
+    ) 
+    IS
     BEGIN
---펀딩 가능한 금액보다 적은 금액을 펀딩하려할 때
+    
+        --펀딩 가능한 금액보다 적은 금액을 펀딩하려할 때
         IF fund_money_a < insert_money_possible THEN
             INSERT INTO fundingjoin (
                 fund_money,
@@ -171,9 +209,10 @@ CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
                 member_id_a
             );
 
-            fundingjoin_pack.member_funding_update(target_id, fund_money_a);
+            fundingjoin_pack.procedure_update_total_money_member(target_id, fund_money_a);
             COMMIT;
---펀딩 가능한 금액보다 많은 금액을 펀딩하려할 때
+            
+        --펀딩 가능한 금액보다 많은 금액을 펀딩하려할 때
         ELSIF fund_money_a >= insert_money_possible THEN
             INSERT INTO fundingjoin (
                 fund_money,
@@ -185,22 +224,22 @@ CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
                 member_id_a
             );
 
-            fundingjoin_pack.member_funding_update(target_id, insert_money_possible);
-            wishlist_pack.end_wishlist_procedure(wish_code_a);
+            fundingjoin_pack.procedure_update_total_money_member(target_id, insert_money_possible);
+            --wishlist_pack.procedure_end_wishlist(wish_code_a);
             COMMIT;
         END IF;
     END;
 
-    PROCEDURE fundingjoin_money_update (
+    PROCEDURE procedure_update_money_fundingjoin (
         fund_money_a           IN  fundingjoin.fund_money%TYPE,
         wish_code_a            IN  fundingjoin.wishlist_code%TYPE,
         member_id_a            IN  fundingjoin.member_id%TYPE,
         target_id              IN  VARCHAR2,
         insert_money_possible  IN  NUMBER
-    ) IS
+    ) 
+    IS
     BEGIN
-    
---펀딩 가능한 금액보다 적은 금액을 펀딩하려할 때
+        --펀딩 가능한 금액보다 적은 금액을 펀딩하려할 때
         IF fund_money_a < insert_money_possible THEN
             UPDATE fundingjoin
             SET
@@ -209,11 +248,11 @@ CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
                     wishlist_code = wish_code_a
                 AND member_id = member_id_a;
 
--- 트리거
-            fundingjoin_pack.member_funding_update(target_id, fund_money_a);
+            -- 트리거
+            fundingjoin_pack.procedure_update_total_money_member(target_id, fund_money_a);
             COMMIT;
 
---펀딩 가능한 금액보다 많은 금액을 펀딩하려할 때
+        --펀딩 가능한 금액보다 많은 금액을 펀딩하려할 때
         ELSIF fund_money_a >= insert_money_possible THEN
             UPDATE fundingjoin
             SET
@@ -222,18 +261,18 @@ CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
                     wishlist_code = wish_code_a
                 AND member_id = member_id_a;
 
-            fundingjoin_pack.member_funding_update(target_id, insert_money_possible);
-            wishlist_pack.end_wishlist_procedure(wish_code_a);
+            fundingjoin_pack.procedure_update_total_money_member(target_id, insert_money_possible);
+            --wishlist_pack.procedure_end_wishlist(wish_code_a);
             COMMIT;
         END IF;
     END;
 
-    FUNCTION fundingjoin_choice (
+    FUNCTION function_choice_fundingjoin (
         fund_money_a  IN  fundingjoin.fund_money%TYPE,
         wish_code_a   IN  fundingjoin.wishlist_code%TYPE,
         member_id_a   IN  fundingjoin.member_id%TYPE
-    ) RETURN NUMBER IS
-
+    ) RETURN NUMBER 
+    IS
         exist_check               NUMBER := -1;
         target_id                 VARCHAR2(20) := NULL;
         target_product_code       NUMBER := -1;
@@ -245,7 +284,7 @@ CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
         no_sufficient EXCEPTION;
         PRAGMA exception_init ( no_sufficient, -20212 );
     BEGIN
-    -- 펀딩받는 사람 id, 펀딩할 물건의 코드, 펀딩종료 여부 조회
+        -- 펀딩받는 사람 id, 펀딩할 물건의 코드, 펀딩종료 여부 조회
         SELECT
             member_id,
             product_code,
@@ -262,20 +301,21 @@ CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
         IF end_check != NULL OR target_id = member_id_a THEN
             raise_application_error(-20212, '조건을 만족하지 않습니다');
         END IF;
-    -- 펀딩할 사람이 가진 포인트 조회
+        
+        -- 펀딩할 사람이 가진 포인트 조회
         SELECT
-            point
+            POINT
         INTO current_point
         FROM
-            member
+            MEMBER
         WHERE
-            id = member_id_a;
+            ID = member_id_a;
 
         IF current_point < fund_money_a THEN
             raise_application_error(-20212, '조건을 만족하지 않습니다');
         END IF;
         
-   -- 펀딩할 물건의 가격 조회
+        -- 펀딩할 물건의 가격 조회
         SELECT
             price
         INTO target_product_price
@@ -284,7 +324,7 @@ CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
         WHERE
             code = target_product_code;
 
-   -- 지금까지 해당 위시리스트에 펀딩된 총 금액
+        -- 지금까지 해당 위시리스트에 펀딩된 총 금액
         BEGIN
             SELECT
                 SUM(fund_money)
@@ -306,65 +346,461 @@ CREATE OR REPLACE PACKAGE BODY fundingjoin_pack IS
             raise_application_error(-20212, '조건을 만족하지 않습니다');
         END IF;
         
-   -- 펀딩할 사람이 해당 위시리스트에 펀딩한 적이 있는지 유무 조회
+        -- 펀딩할 사람이 해당 위시리스트에 펀딩한 적이 있는지 유무 조회
         SELECT
             COUNT(member_id)
         INTO exist_check
         FROM
             fundingjoin
         WHERE
-                member_id = member_id_a
-            AND wishlist_code = wish_code_a;
+                member_id = member_id_a AND wishlist_code = wish_code_a;
 
-   -- 펀딩한 적 있으면 update, 없으면 insert
+        -- 펀딩한 적 있으면 update, 없으면 insert
         IF exist_check > 0 THEN
-            fundingjoin_pack.fundingjoin_money_update(fund_money_a, wish_code_a, member_id_a, target_id, insert_money_possible);
+            fundingjoin_pack.procedure_update_money_fundingjoin(fund_money_a, wish_code_a, member_id_a, target_id, insert_money_possible);
         ELSE
-            fundingjoin_pack.fundingjoin_insert(fund_money_a, wish_code_a, member_id_a, target_id, insert_money_possible);
+            fundingjoin_pack.procedure_insert_fundingjoin(fund_money_a, wish_code_a, member_id_a, target_id, insert_money_possible);
         END IF;
 
-        RETURN 1;    
+        RETURN 1;
+        
     -- 예외처리
     EXCEPTION
         WHEN no_sufficient THEN
             RETURN 129;
     END;
 
-    PROCEDURE member_funding_update (
+    PROCEDURE procedure_update_total_money_member (
         target_id     IN  VARCHAR2,
         insert_money  IN  NUMBER
-    ) IS
+    )
+    IS
     BEGIN
-        UPDATE member
+        UPDATE MEMBER
         SET
             total_funding_money = total_funding_money + insert_money
         WHERE
-            id = target_id;
+            ID = target_id;
 
         COMMIT;
     END;
 END;
 /
 
-@fundingjoin_pack.sql
+-------------------------------------------
+---------fundingjoin 관련 트리거------------
+-------------------------------------------
+DROP TRIGGER total_funding_trigger;
 
-
-CREATE OR REPLACE TRIGGER total_funding_tigger
+CREATE OR REPLACE TRIGGER total_funding_trigger
     AFTER INSERT OR UPDATE ON fundingjoin
     FOR EACH ROW
     BEGIN
-      IF INSERTING THEN
-        UPDATE member
+      IF inserting THEN
+        UPDATE MEMBER
         SET
-            member.point = member.point - :new.fund_money
+            MEMBER.POINT = MEMBER.POINT - :NEW.fund_money
         WHERE
-            member.id = :new.member_id;
+            MEMBER.ID = :NEW.member_id;
       ELSE   /* Updating. */
-        UPDATE member
+        UPDATE MEMBER
         SET
-        member.point = member.point - ( :new.fund_money - :old.fund_money )
+        MEMBER.POINT = MEMBER.POINT - ( :NEW.fund_money - :OLD.fund_money )
         WHERE
-        member.id = :new.member_id;
+        MEMBER.ID = :NEW.member_id;
       END IF;
     END;
     /
+
+
+----------------------------------------------
+------------Orders 관련 패키지 선언부-------------
+----------------------------------------------
+CREATE OR REPLACE PACKAGE orders_pack IS
+    --주문하기 누르면 주문 테이블에 입력하는 프로시저
+    PROCEDURE procedure_insert_product_orders(
+        p_member_id IN orders.member_id%TYPE,
+        p_product_code IN product.code%TYPE
+    );
+END orders_pack;
+/
+
+
+----------------------------------------------
+------------Orders 관련 패키지 바디-------------
+----------------------------------------------
+CREATE OR REPLACE PACKAGE BODY orders_pack IS
+    PROCEDURE procedure_insert_product_orders(
+        p_member_id IN orders.member_id%TYPE,
+        p_product_code IN product.code%TYPE
+    )
+    IS
+    BEGIN
+        INSERT INTO orders(code,member_id, product_code, order_date) 
+            VALUES (seq_order.NEXTVAL,p_member_id, p_product_code,sysdate);
+    END;
+END orders_pack;
+/
+
+-----------------------------------------------
+------------product 관련 패키지 선언부-------------
+-----------------------------------------------
+CREATE OR REPLACE PACKAGE product_pack IS
+
+    -- 주문 상세 페이지에서 상품 상세 정보 가져오기
+    PROCEDURE procedure_select_one_product(
+        p_code IN OUT product.code%TYPE,
+        p_name OUT product.NAME%TYPE,
+        p_price OUT product.price%TYPE,
+        p_description OUT product.DESCRIPTION%TYPE,
+        p_image_path OUT product.image_path%TYPE
+    );
+    
+    --상품 목록 추출하는 프로시저
+    PROCEDURE procedure_select_multiple_product(
+        p_cursor OUT SYS_REFCURSOR
+    );
+    
+END product_pack;
+/
+
+-----------------------------------------------
+------------product 관련 패키지 바디-------------
+-----------------------------------------------
+CREATE OR REPLACE PACKAGE BODY product_pack IS
+
+    PROCEDURE procedure_select_one_product(
+        p_code IN OUT product.code%TYPE,
+        p_name OUT product.NAME%TYPE,
+        p_price OUT product.price%TYPE,
+        p_description OUT product.DESCRIPTION%TYPE,
+        p_image_path OUT product.image_path%TYPE
+    )
+    IS
+    BEGIN
+        SELECT code, NAME, price, DESCRIPTION, image_path
+        INTO p_code, p_name, p_price, p_description, p_image_path
+        FROM product
+        WHERE code = p_code;
+    END;
+    
+    PROCEDURE procedure_select_multiple_product(
+        p_cursor OUT SYS_REFCURSOR
+    )
+    IS
+    BEGIN
+        OPEN p_cursor FOR SELECT * FROM product;
+    END;
+    
+END product_pack;
+/
+
+-----------------------------------------------
+------------member 관련 패키지 선언부-------------
+-----------------------------------------------
+DROP PACKAGE member_pack;
+
+CREATE OR REPLACE PACKAGE member_pack IS
+
+    PROCEDURE procedure_insert_member(
+        p_id         IN MEMBER.ID%TYPE,
+        p_password   IN MEMBER.PASSWORD%TYPE,
+        p_name       IN MEMBER.NAME%TYPE,
+        p_birthday   IN MEMBER.birthday%TYPE,
+        p_address    IN MEMBER.address%TYPE
+   );
+   
+   FUNCTION function_login_member(
+        p_id IN MEMBER.ID%TYPE,
+        p_password IN MEMBER.PASSWORD%TYPE
+    ) RETURN NUMBER;
+    
+    PROCEDURE procedure_substract_money_member(
+        p_member_id             IN MEMBER.ID%TYPE,
+        p_product_code          IN product.code%TYPE,
+        p_spend_funding_money   IN MEMBER.total_funding_money%TYPE,
+        p_spend_point           IN MEMBER.POINT%TYPE
+    );
+    
+    PROCEDURE procedure_select_myinfo_member (
+        p_member_id IN MEMBER.ID%TYPE,
+        v_member_id OUT MEMBER.ID%TYPE,
+        v_member_name OUT MEMBER.NAME%TYPE,
+        v_member_birth OUT MEMBER.birthday%TYPE,
+        v_member_img OUT MEMBER.image_path%TYPE
+    );
+    
+    PROCEDURE procedure_select_bfriends_member (
+        p_member_id IN MEMBER.ID%TYPE,
+        rec OUT SYS_REFCURSOR
+    );
+    
+    PROCEDURE procedure_select_freinds_member(
+        p_member_id IN MEMBER.ID%TYPE,
+        rec OUT SYS_REFCURSOR
+    );
+    
+    -- 지정한 아이디의 member 정보 추출
+    PROCEDURE procedure_substract_member(
+        m_id        IN  VARCHAR2,
+        m_name      OUT VARCHAR2,
+        m_birth     OUT DATE,
+        m_point     OUT NUMBER,
+        m_funding   OUT NUMBER,
+        m_path      OUT VARCHAR2
+        );
+        
+    PROCEDURE procedure_select_member_money(
+        m_id        IN  VARCHAR2,
+        m_point     OUT NUMBER,
+        m_funding   OUT NUMBER
+    );
+    
+END member_pack;
+/
+
+-----------------------------------------------
+------------member 관련 패키지 바디--------------
+-----------------------------------------------
+CREATE OR REPLACE PACKAGE BODY member_pack IS
+
+    PROCEDURE procedure_insert_member(
+       p_id         IN MEMBER.ID%TYPE,
+       p_password   IN MEMBER.PASSWORD%TYPE,
+       p_name       IN MEMBER.NAME%TYPE,
+       p_birthday   IN MEMBER.birthday%TYPE,
+       p_address    IN MEMBER.address%TYPE
+       )
+     IS
+        p_id_cnt NUMBER;
+    BEGIN
+        SELECT COUNT(ID) INTO p_id_cnt 
+        FROM MEMBER 
+        WHERE ID = p_id;
+        -- 아이디 중복검사 -> 성공 -> 회원가입  
+        IF p_id_cnt = 0 THEN 
+            INSERT INTO MEMBER(ID, PASSWORD, NAME, birthday, address)
+            VALUES (p_id, p_password, p_name, p_birthday, p_address);
+        -- 아이디 중복검사 -> 실패 -> 팝업창  
+        ELSIF p_id_cnt = 1 THEN 
+            dbms_output.put_line('중복된 아이디가 있습니다.');
+            raise_application_error(-20000, '중복된 아이디가 있습니다.');
+        END IF;            
+    END;
+    
+    FUNCTION function_login_member(
+        p_id IN MEMBER.ID%TYPE,
+        p_password IN MEMBER.PASSWORD%TYPE
+        ) 
+          RETURN NUMBER
+        IS
+          p_login_check NUMBER; -- 0이 출력되면 로그인실패 / 1이 출력되면 로그인성공
+          p_id_cnt NUMBER;
+          p_check_password MEMBER.PASSWORD%TYPE;
+        BEGIN
+            SELECT COUNT(ID) INTO p_id_cnt 
+            FROM MEMBER 
+            WHERE ID = p_id;
+        -- 아이디가 존재하지 않을때.
+        IF p_id_cnt = 0 THEN    
+            dbms_output.put_line('아이디가 존재하지 않습니다.');
+            raise_application_error(-20000, '아이디가 존재하지 않습니다.');
+            p_login_check := 0;
+            RETURN p_login_check ; 
+            
+        -- 아이디가 존재할 때.
+        ELSIF p_id_cnt = 1 THEN
+            -- 비밀번호 검사
+            SELECT PASSWORD INTO p_check_password
+            FROM MEMBER 
+            WHERE ID = p_id;
+            
+            IF p_check_password = p_password THEN
+                       dbms_output.put_line('로그인에 성공하였습니다.');
+                       p_login_check := 1;
+                            RETURN p_login_check;
+            ELSIF p_check_password != p_password THEN
+                       dbms_output.put_line('비밀번호가 틀렸습니다.');
+                       p_login_check := 0;
+                            RETURN p_login_check ;
+            END IF;   
+        END IF;
+    END;
+    
+    PROCEDURE procedure_substract_money_member(
+        p_member_id IN MEMBER.ID%TYPE,
+        p_product_code IN product.code%TYPE,
+        p_spend_funding_money IN MEMBER.total_funding_money%TYPE,
+        p_spend_point IN MEMBER.POINT%TYPE
+        )
+    IS
+        p_total_funding_money NUMBER;
+        p_point NUMBER;
+    
+    BEGIN
+        SELECT total_funding_money INTO p_total_funding_money 
+        FROM MEMBER
+        WHERE ID = p_member_id;
+        
+        SELECT POINT INTO p_point
+        FROM MEMBER
+        WHERE ID = p_member_id;
+    
+        IF p_total_funding_money>=p_spend_funding_money AND p_point >=p_spend_point THEN
+            UPDATE MEMBER SET total_funding_money = total_funding_money - p_spend_funding_money WHERE ID = p_member_id;
+            UPDATE MEMBER SET POINT = POINT - p_spend_point WHERE ID = p_member_id;
+    
+        ELSE
+            IF p_point < p_spend_point THEN
+                dbms_output.put_line('가진 POINT가 부족합니다.');
+                raise_application_error(-20000, 'POINT가 부족합니다.');
+            ELSE
+                dbms_output.put_line('가진 FUNDING MONEY가 부족합니다.');
+                raise_application_error(-20000, 'FUNDING MONEY가 부족합니다.');
+            END IF;
+        END IF;
+    END;
+    
+    -- 접속 계정의 프로필 가져오는 프로시저
+    PROCEDURE procedure_select_myinfo_member (
+        p_member_id IN MEMBER.ID%TYPE,
+        v_member_id OUT MEMBER.ID%TYPE,
+        v_member_name OUT MEMBER.NAME%TYPE,
+        v_member_birth OUT MEMBER.birthday%TYPE,
+        v_member_img OUT MEMBER.image_path%TYPE
+    )
+    IS
+    BEGIN
+        SELECT ID, NAME, birthday, image_path
+        INTO v_member_id, v_member_name, v_member_birth, v_member_img
+        FROM MEMBER
+        WHERE ID = p_member_id;
+    END;
+    
+    PROCEDURE procedure_select_bfriends_member (
+        p_member_id IN MEMBER.ID%TYPE,
+        rec         OUT SYS_REFCURSOR
+    )
+    IS
+    BEGIN
+        OPEN rec FOR
+            SELECT ID, NAME, birthday, image_path
+            FROM MEMBER
+            WHERE ID != p_member_id AND to_char(birthday, 'MM/DD') = to_char(sysdate, 'MM/DD')
+            ORDER BY NAME;
+    END;
+    
+    --나를 제외한 친구 목록 불러오는 프로시저
+    PROCEDURE procedure_select_freinds_member(
+        p_member_id IN MEMBER.ID%TYPE,
+        rec         OUT SYS_REFCURSOR
+    )
+    IS
+    BEGIN
+        OPEN rec FOR
+            SELECT ID, NAME, birthday, image_path
+            FROM MEMBER
+            WHERE ID != p_member_id
+            ORDER BY NAME;
+    END;
+ 
+    -- 지정한 아이디의 member 정보 추출
+    PROCEDURE procedure_substract_member(
+        m_id        IN  VARCHAR2,
+        m_name      OUT VARCHAR2,
+        m_birth     OUT DATE,
+        m_point     OUT NUMBER,
+        m_funding   OUT NUMBER,
+        m_path      OUT VARCHAR2
+    )
+    IS
+    BEGIN
+        SELECT NAME, birthday, POINT, total_funding_money, image_path 
+        INTO m_name, m_birth, m_point,m_funding, m_path 
+        FROM MEMBER WHERE ID = m_id;
+    END;
+    
+    -- 지정한 아이디의 member 정보 추출
+    PROCEDURE procedure_select_member_money(
+        m_id        IN  VARCHAR2,
+        m_point     OUT NUMBER,
+        m_funding   OUT NUMBER
+        )
+    IS
+    BEGIN
+        SELECT POINT, total_funding_money 
+        INTO m_point,m_funding
+        FROM MEMBER WHERE ID = m_id;
+    END;
+    
+END member_pack;
+/
+
+-----------------------------------------------
+-------------그래프 관련 패키지 선언부-------------
+-----------------------------------------------
+CREATE OR REPLACE PACKAGE graph_pack IS
+
+    PROCEDURE funding_count_money_range(
+        w_id IN VARCHAR2,
+        f_cursor OUT SYS_REFCURSOR
+    );
+    
+    PROCEDURE fundingjoin_member_age(
+        m_id IN VARCHAR2,
+        m_age OUT NUMBER
+    );
+    
+    PROCEDURE orders_range_count(
+        o_id IN VARCHAR2,
+        o_cursor OUT SYS_REFCURSOR
+    );
+END;
+/
+
+-----------------------------------------------
+-------------그래프 관련 패키지 바디-------------
+-----------------------------------------------
+CREATE OR REPLACE PACKAGE BODY graph_pack IS
+
+    PROCEDURE funding_count_money_range(
+        w_id IN VARCHAR2,
+        f_cursor OUT SYS_REFCURSOR
+    )
+    IS
+    BEGIN
+        OPEN f_cursor FOR 
+            SELECT w.code, F.member_id, F.fund_money
+            FROM wishlist w, fundingjoin F
+            WHERE w.member_id = w_id AND F.wishlist_code = w.code AND w.end_date IS NULL;
+    END;
+    
+    PROCEDURE fundingjoin_member_age(
+        m_id IN VARCHAR2,
+        m_age OUT NUMBER
+    )
+    IS
+    BEGIN
+        SELECT TRUNC(months_between(TRUNC(sysdate),  to_char(birthday, 'YYYY-MM-DD') ) / 12 +2 ) INTO m_age
+        FROM MEMBER M
+        WHERE M.ID = m_id;
+    END;
+    
+    PROCEDURE orders_range_count(
+        o_id IN VARCHAR2,
+        o_cursor OUT SYS_REFCURSOR
+    )
+    IS
+    BEGIN
+        OPEN o_cursor FOR 
+            SELECT 
+            COUNT(*) AS COUNT, to_char(TO_DATE(order_date), 'YYYY-MM') AS monthlydata
+            FROM  orders
+            WHERE order_date >= '2020/0101' AND member_id = o_id
+            GROUP BY to_char(TO_DATE(order_date), 'YYYY-MM')
+            ORDER BY monthlydata;
+    END;
+    
+END graph_pack;
+/
+
