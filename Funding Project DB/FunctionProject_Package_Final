@@ -1,4 +1,4 @@
---2021.04.05 10:28
+--2021.04.05 15:24
 -----------------------------------------------------------------------------------
 -------------------------- wishlist 관련 패키지 선언부 -------------------------------
 -----------------------------------------------------------------------------------
@@ -390,27 +390,29 @@ END;
 -------------------------------------------
 ---------fundingjoin 관련 트리거------------
 -------------------------------------------
+
 DROP TRIGGER total_funding_trigger;
 
 CREATE OR REPLACE TRIGGER total_funding_trigger
-    AFTER INSERT OR UPDATE ON fundingjoin
-    FOR EACH ROW
-    BEGIN
-      IF inserting THEN
-        UPDATE MEMBER
-        SET
-            MEMBER.POINT = MEMBER.POINT - :NEW.fund_money
-        WHERE
-            MEMBER.ID = :NEW.member_id;
-      ELSE   /* Updating. */
-        UPDATE MEMBER
-        SET
-        MEMBER.POINT = MEMBER.POINT - ( :NEW.fund_money - :OLD.fund_money )
-        WHERE
+AFTER INSERT OR UPDATE ON fundingjoin
+FOR EACH ROW
+BEGIN
+  IF inserting THEN
+    UPDATE MEMBER
+    SET
+        MEMBER.POINT = MEMBER.POINT - :NEW.fund_money
+    WHERE
         MEMBER.ID = :NEW.member_id;
-      END IF;
-    END;
-    /
+  ELSE   /* Updating. */
+    UPDATE MEMBER
+    SET
+    MEMBER.POINT = MEMBER.POINT - ( :NEW.fund_money - :OLD.fund_money )
+    WHERE
+    MEMBER.ID = :NEW.member_id;
+  END IF;
+END;
+/
+commit;
 
 
 ----------------------------------------------
@@ -555,6 +557,11 @@ CREATE OR REPLACE PACKAGE member_pack IS
         m_point     OUT NUMBER,
         m_funding   OUT NUMBER
     );
+    
+--    procedure procedure_substract_funding_money_member(
+--        p_member_id in member.id%type,
+--        p_point in member.point%type
+--    );
     
 END member_pack;
 /
@@ -732,6 +739,27 @@ CREATE OR REPLACE PACKAGE BODY member_pack IS
         INTO m_point,m_funding
         FROM MEMBER WHERE ID = m_id;
     END;
+--    
+--    procedure procedure_substract_funding_money_member(
+--        p_member_id in member.id%type,
+--        p_point in member.point%type
+--    )
+--    is
+--        v_point member.point%type;
+--    begin
+--    
+--        select point into v_point
+--        from member
+--        where id = p_member_id;
+--        
+--        if p_point > v_point then
+--            raise_application_error(-20002, '보유 포인트가 부족합니다.');
+--        end if;
+--        
+--        update member
+--        set point = point - p_point
+--        where id = p_member_id;
+--    end;
     
 END member_pack;
 /
