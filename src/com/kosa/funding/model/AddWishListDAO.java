@@ -17,7 +17,7 @@ public class AddWishListDAO {
 		int return_val = -1;
 		
 		try {
-			String runSP = "{? = call wishlist_pack.procedure_insert_wishlist(?,?) }";
+			String runSP = "{? = call wishlist_pack.function_insert_wishlist(?,?) }";
 			callableStatement = conn.prepareCall(runSP);
 
 			callableStatement.registerOutParameter(1, oracle.jdbc.OracleTypes.INTEGER); 
